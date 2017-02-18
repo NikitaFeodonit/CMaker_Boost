@@ -26,7 +26,7 @@ project(BoostBuilder)
 # CORE CONFIGURE/BUILD OPTIONS
 #-----------------------------------------------------------------------
 # - CMake utilities
-include(BoostBuildUtility.cmake)
+include(${PROJECT_SOURCE_DIR}/BoostBuildUtility.cmake)
 include(GNUInstallDirs)
 
 # Basic Boost Parameters
