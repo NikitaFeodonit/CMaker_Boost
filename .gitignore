@@ -27,3 +27,10 @@
 *.exe
 *.out
 *.app
+
+# Eclipse
+.externalToolBuilders/
+.settings/
+build/
+.cproject
+.project
