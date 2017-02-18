@@ -22,8 +22,6 @@
 cmake_minimum_required(VERSION 3.2)
 project(BoostBuilder)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-
 #-----------------------------------------------------------------------
 # CORE CONFIGURE/BUILD OPTIONS
 #-----------------------------------------------------------------------
