@@ -35,7 +35,10 @@ include(GNUInstallDirs)
 set(Boost_MAJOR_VERSION 1)
 set(Boost_MINOR_VERSION 59)
 set(Boost_SUBMINOR_VERSION 0)
-set(Boost_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+set(
+  Boost_VERSION
+    "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}"
+)
 
 # - List libraries to always build.
 # We will construct the final list in the setup phase because bootstrap
@@ -55,9 +58,9 @@ set(Boost_INSTALLED_LIBRARIES
   system
   test
   thread
-  )
-set(Boost_CONFIGURE_ARGS )
-set(Boost_BUILD_ARGS )
+)
+set(Boost_CONFIGURE_ARGS)
+set(Boost_BUILD_ARGS)
 
 #-----------------------------------------------------------------------
 # VARIANTS
@@ -69,7 +72,7 @@ set(Boost_OPTIONAL_LIBRARIES
   regex
   timer
   log
-  )
+)
 
 foreach(_oplib ${Boost_OPTIONAL_LIBRARIES})
   option(boost.${_oplib} "Build Boost.${_oplib} Library" OFF)
@@ -162,27 +165,34 @@ endif()
 #
 include(ExternalProject)
 ExternalProject_Add(boost
-  URL                 "https://downloads.sourceforge.net/project/boost/boost/1.59.0/boost_1_59_0.tar.bz2"
-  URL_HASH            SHA256=727a932322d94287b62abb1bd2d41723eec4356a7728909e38adb65ca25241ca
+  URL
+    "https://downloads.sourceforge.net/project/boost/boost/1.59.0/boost_1_59_0.tar.bz2"
+  URL_HASH
+    SHA256=727a932322d94287b62abb1bd2d41723eec4356a7728909e38adb65ca25241ca
 
   # If sourceforge downloads barf, copy by hand and stick it next to this
   #URL                 ${PROJECT_SOURCE_DIR}/boost_1_59_0.tar.bz2
 
-  BUILD_IN_SOURCE     1
-  CONFIGURE_COMMAND   <SOURCE_DIR>/bootstrap.sh
-                      --prefix=${CMAKE_INSTALL_PREFIX}
-                      # These can be adjusted
-                      --libdir=${CMAKE_INSTALL_FULL_LIBDIR}
-                      --includedir=${CMAKE_INSTALL_FULL_INCDIR}
-                      ${Boost_CONFIGURE_ARGS}
+  BUILD_IN_SOURCE
+    1
+  CONFIGURE_COMMAND
+    <SOURCE_DIR>/bootstrap.sh
+    --prefix=${CMAKE_INSTALL_PREFIX}
+    # These can be adjusted
+    --libdir=${CMAKE_INSTALL_FULL_LIBDIR}
+    --includedir=${CMAKE_INSTALL_FULL_INCDIR}
+    ${Boost_CONFIGURE_ARGS}
   # All in one build/install step is slightly faster
-  BUILD_COMMAND       ""
-  INSTALL_COMMAND     ./b2 -d2 -q -j${NJOBS} install
-                      --layout=tagged
-                      --debug-configuration
-                      ${Boost_BUILD_ARGS}
-  STEP_TARGETS        download update configure install
-  )
+  BUILD_COMMAND
+    ""
+  INSTALL_COMMAND
+    ./b2 -d2 -q -j${NJOBS} install
+    --layout=tagged
+    --debug-configuration
+    ${Boost_BUILD_ARGS}
+  STEP_TARGETS
+    download update configure install
+)
 
 #-----------------------------------------------------------------------
 # Custom step to build and install the bcp program
@@ -190,13 +200,17 @@ ExternalProject_Add(boost
 # prevent "duplicate target" errors.
 #
 ExternalProject_Add_Step(boost install_bcp
-  COMMAND           ./b2 -d2 -q -j${NJOBS}
-                    ${Boost_BUILD_USER_CONFIG_ARGS}
-                    ./tools/bcp
-                    COMMAND           ${CMAKE_COMMAND} -E copy ./dist/bin/bcp ${CMAKE_INSTALL_FULL_BINDIR}/bcp
-  DEPENDEES         install
-  WORKING_DIRECTORY <BINARY_DIR>
-  )
+  COMMAND
+    ./b2 -d2 -q -j${NJOBS}
+    ${Boost_BUILD_USER_CONFIG_ARGS}
+    ./tools/bcp
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ./dist/bin/bcp ${CMAKE_INSTALL_FULL_BINDIR}/bcp
+  DEPENDEES
+    install
+  WORKING_DIRECTORY
+    <BINARY_DIR>
+)
 
 #-----------------------------------------------------------------------
 # Create and install CMake support files.
@@ -204,19 +218,22 @@ ExternalProject_Add_Step(boost install_bcp
 # lifting of discovery of installed Boost libraries and setting
 # up appropriate import targets for them.
 #
-set(Boost_INSTALL_CMAKEDIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/Boost-${Boost_VERSION}")
+set(
+  Boost_INSTALL_CMAKEDIR
+    "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/Boost-${Boost_VERSION}"
+)
 
 configure_file(
   ${PROJECT_SOURCE_DIR}/BoostWriteCMakeImportFiles.cmake.in
   ${PROJECT_BINARY_DIR}/BoostWriteCMakeImportFiles.cmake
   @ONLY
-  )
+)
 
 configure_file(
   ${PROJECT_SOURCE_DIR}/BoostConfigVersion.cmake.in
   ${PROJECT_BINARY_DIR}/BoostConfigVersion.cmake
   @ONLY
-  )
+)
 
 configure_file(
   ${PROJECT_SOURCE_DIR}/BoostConfig.cmake.in
@@ -226,15 +243,21 @@ configure_file(
 
 # Step for installation of all the above, as required
 ExternalProject_Add_Step(boost install_cmake
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${Boost_INSTALL_CMAKEDIR}
-  COMMAND ${CMAKE_COMMAND} -P ${PROJECT_BINARY_DIR}/BoostWriteCMakeImportFiles.cmake
-  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/BoostConfig.cmake ${Boost_INSTALL_CMAKEDIR}
-  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/BoostConfigVersion.cmake ${Boost_INSTALL_CMAKEDIR}
-  DEPENDEES install
-  DEPENDS   ${PROJECT_SOURCE_DIR}/BoostLibraryDepends.cmake.in
-            ${PROJECT_BINARY_DIR}/BoostWriteCMakeImportFiles.cmake
-            ${PROJECT_BINARY_DIR}/BoostConfigVersion.cmake
-            ${PROJECT_BINARY_DIR}/BoostConfig.cmake
-  )
-
-
+  COMMAND
+    ${CMAKE_COMMAND} -E make_directory ${Boost_INSTALL_CMAKEDIR}
+  COMMAND
+    ${CMAKE_COMMAND} -P ${PROJECT_BINARY_DIR}/BoostWriteCMakeImportFiles.cmake
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+      ${PROJECT_BINARY_DIR}/BoostConfig.cmake ${Boost_INSTALL_CMAKEDIR}
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+      ${PROJECT_BINARY_DIR}/BoostConfigVersion.cmake ${Boost_INSTALL_CMAKEDIR}
+  DEPENDEES
+    install
+  DEPENDS
+    ${PROJECT_SOURCE_DIR}/BoostLibraryDepends.cmake.in
+    ${PROJECT_BINARY_DIR}/BoostWriteCMakeImportFiles.cmake
+    ${PROJECT_BINARY_DIR}/BoostConfigVersion.cmake
+    ${PROJECT_BINARY_DIR}/BoostConfig.cmake
+)
