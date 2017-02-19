@@ -23,6 +23,9 @@
 
 # Based on the CMakeLists.txt from BoostBuilder
 # https://github.com/drbenmorgan/BoostBuilder
+# and on the build-boost.sh from CrystaX NDK
+# https://www.crystax.net/
+# https://github.com/crystax/android-platform-ndk/blob/master/build/tools/build-boost.sh
 
 
 # CMake build/bundle script for Boost Libraries
@@ -64,6 +67,7 @@ set(Boost_VERSION_SHA1
 )
 
 set(Boost_BOOTSTRAP_ARGS)
+set(Boost_BOOTSTRAP_DIRS_ARGS)
 set(Boost_B2_ARGS)
 set(Boost_B2_BCP_ARGS)
 set(Boost_BUILD_ARGS)
@@ -175,7 +179,10 @@ elseif()
 endif()
 
 if(_boost_toolset)
-  list(APPEND Boost_BOOTSTRAP_ARGS "toolset=${_boost_toolset}")
+  if(NOT CMAKE_CROSSCOMPILING)
+    list(APPEND Boost_BOOTSTRAP_ARGS "toolset=${_boost_toolset}")
+  endif()
+
   list(APPEND Boost_BUILD_ARGS "toolset=${_boost_toolset}")
 
   set(Boost_USER_CONFIG_CONTEXT "
@@ -263,6 +270,17 @@ if(NOT EXISTS "${Boost_SRC_DIR}")
 endif()
 
 
+list(APPEND Boost_BOOTSTRAP_DIRS_ARGS
+  --prefix=${CMAKE_INSTALL_PREFIX}
+)
+list(APPEND Boost_BOOTSTRAP_DIRS_ARGS
+  --includedir=${CMAKE_INSTALL_FULL_INCDIR}
+)
+list(APPEND Boost_BOOTSTRAP_DIRS_ARGS
+  --libdir=${CMAKE_INSTALL_FULL_LIBDIR}
+)
+
+
 list(APPEND Boost_B2_ARGS -q -j${NJOBS} install)
 list(APPEND Boost_B2_ARGS --layout=tagged)
 list(APPEND Boost_B2_ARGS --debug-configuration)
@@ -282,7 +300,7 @@ find_program(b2Path NAMES b2 PATHS ${Boost_SRC_DIR} NO_DEFAULT_PATH)
 
 include(ExternalProject)
 
-if(NOT b2Path)
+if(Boost_BUILD_TOOLS AND NOT b2Path)
   ExternalProject_Add(boost
     SOURCE_DIR
       ${Boost_SRC_DIR}
@@ -290,10 +308,23 @@ if(NOT b2Path)
       1
     CONFIGURE_COMMAND
       <SOURCE_DIR>/bootstrap.sh
-      --prefix=${CMAKE_INSTALL_PREFIX}
-      --includedir=${CMAKE_INSTALL_FULL_INCDIR}
-      --libdir=${CMAKE_INSTALL_FULL_LIBDIR}
-      ${Boost_BOOTSTRAP_ARGS}
+        ${Boost_BOOTSTRAP_DIRS_ARGS} ${Boost_BOOTSTRAP_ARGS}
+    BUILD_COMMAND
+      ""
+    INSTALL_COMMAND
+      ""
+    STEP_TARGETS
+      configure install
+  )
+
+elseif(b2Path OR (CMAKE_CROSSCOMPILING AND Boost_BUILD_LIBS))
+  ExternalProject_Add(boost
+    SOURCE_DIR
+      ${Boost_SRC_DIR}
+    BUILD_IN_SOURCE
+      1
+    CONFIGURE_COMMAND
+      ""
     # All in one build/install step is slightly faster
     BUILD_COMMAND
       ""
@@ -303,14 +334,15 @@ if(NOT b2Path)
       configure install
   )
 
-elseif(b2Path)
+else()
   ExternalProject_Add(boost
     SOURCE_DIR
       ${Boost_SRC_DIR}
     BUILD_IN_SOURCE
       1
     CONFIGURE_COMMAND
-      ""
+      <SOURCE_DIR>/bootstrap.sh
+        ${Boost_BOOTSTRAP_DIRS_ARGS} ${Boost_BOOTSTRAP_ARGS}
     # All in one build/install step is slightly faster
     BUILD_COMMAND
       ""
@@ -327,26 +359,33 @@ endif()
 # We need to use a custom set of layout and toolset arguments to
 # prevent "duplicate target" errors.
 #
-list(APPEND Boost_B2_BCP_ARGS -q -j${NJOBS})
-
-if(Boost_BUILD_VERBOSE)
-  list(APPEND Boost_B2_BCP_ARGS -d2)
-else()
-  list(APPEND Boost_B2_BCP_ARGS -d0)
+if(Boost_BUILD_TOOLS AND Boost_BUILD_BCP)
+  list(APPEND Boost_B2_BCP_ARGS -q -j${NJOBS})
+  
+  if(Boost_BUILD_VERBOSE)
+    list(APPEND Boost_B2_BCP_ARGS -d2)
+  else()
+    list(APPEND Boost_B2_BCP_ARGS -d0)
+  endif()
+  
+  ExternalProject_Add_Step(boost install_bcp
+    COMMAND
+      ./b2 ${Boost_B2_BCP_ARGS}
+      ${Boost_BUILD_USER_CONFIG_ARGS}
+      ./tools/bcp
+    COMMAND
+      ${CMAKE_COMMAND} -E copy ./dist/bin/bcp ${CMAKE_INSTALL_FULL_BINDIR}/bcp
+    DEPENDEES
+      install
+    WORKING_DIRECTORY
+      <BINARY_DIR>
+  )
 endif()
 
-ExternalProject_Add_Step(boost install_bcp
-  COMMAND
-    ./b2 ${Boost_B2_BCP_ARGS}
-    ${Boost_BUILD_USER_CONFIG_ARGS}
-    ./tools/bcp
-  COMMAND
-    ${CMAKE_COMMAND} -E copy ./dist/bin/bcp ${CMAKE_INSTALL_FULL_BINDIR}/bcp
-  DEPENDEES
-    install
-  WORKING_DIRECTORY
-    <BINARY_DIR>
-)
+
+if(Boost_BUILD_TOOLS)
+  return()
+endif()
 
 
 #-----------------------------------------------------------------------

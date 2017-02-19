@@ -66,6 +66,74 @@ function(boost_cmaker)
       -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
     )
   endif()
+
+
+  if(ANDROID)
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID=ON
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_NDK=${ANDROID_NDK}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_TOOLCHAIN_NAME=${ANDROID_TOOLCHAIN_NAME}
+    )
+  
+    # Configurable variables from
+    # android-sdk/cmake/3.6.3155560/android.toolchain.cmake
+    # (package version 3.6.3155560).
+    # Modeled after the ndk-build system.
+    # For any variables defined in:
+    #         https://developer.android.com/ndk/guides/android_mk.html
+    #         https://developer.android.com/ndk/guides/application_mk.html
+    # if it makes sense for CMake, then replace LOCAL, APP, or NDK with ANDROID,
+    # and we have that variable below.
+    # The exception is ANDROID_TOOLCHAIN vs NDK_TOOLCHAIN_VERSION.
+    # Since we only have one version of each gcc and clang, specifying a version
+    # doesn't make much sense.
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_ABI=${ANDROID_ABI}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_PLATFORM=${ANDROID_PLATFORM}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_STL=${ANDROID_STL}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_PIE=${ANDROID_PIE}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_CPP_FEATURES=${ANDROID_CPP_FEATURES}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_ALLOW_UNDEFINED_SYMBOLS=${ANDROID_ALLOW_UNDEFINED_SYMBOLS}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_ARM_MODE=${ANDROID_ARM_MODE}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_ARM_NEON=${ANDROID_ARM_NEON}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_DISABLE_NO_EXECUTE=${ANDROID_DISABLE_NO_EXECUTE}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_DISABLE_RELRO=${ANDROID_DISABLE_RELRO}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_DISABLE_FORMAT_STRING_CHECKS=${ANDROID_DISABLE_FORMAT_STRING_CHECKS}
+    )
+    list(APPEND BoostLibs_CMAKE_ARGS
+      -DANDROID_CCACHE=${ANDROID_CCACHE}
+    )
+  endif()
   
   
   # List libraries to build. Dependence libs will builded too.
@@ -86,18 +154,41 @@ function(boost_cmaker)
     -DBoost_DOWNLOAD_DIR=${PROJECT_BINARY_DIR}
   )
   
-  # Configure boost libs
-  list(APPEND BCM_LIBS_CMAKE_ARGS
-    -Dboost.staticlibs=ON
-  )
-  list(APPEND BCM_LIBS_CMAKE_ARGS
-    ${BCM_COMMON_CMAKE_ARGS}
-  )
-  
+
   set(BCMI_DIR_NAME "BoostCMakerInternal")
   set(BCMI_SRC_DIR  "${BCM_SRC_DIR}/${BCMI_DIR_NAME}")
   set(BCMI_WORK_DIR "${CMAKE_CURRENT_BINARY_DIR}/${BCMI_DIR_NAME}")
 
+
+  if(CMAKE_CROSSCOMPILING)
+    # Config boost tools (b2/bjam, bcp) for host arch
+    set(BCMI_TOOLS_DIR_NAME "${BCMI_DIR_NAME}Tools")
+    set(BCMI_TOOLS_WORK_DIR
+      "${CMAKE_CURRENT_BINARY_DIR}/${BCMI_TOOLS_DIR_NAME}"
+    )
+
+    list(APPEND BCM_TOOLS_CMAKE_ARGS -DBOOST_BUILD_TOOLS=ON)
+    list(APPEND BCM_TOOLS_CMAKE_ARGS ${BCM_COMMON_CMAKE_ARGS})
+
+    file(MAKE_DIRECTORY ${BCMI_TOOLS_WORK_DIR})
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} ${BCMI_SRC_DIR} ${BCM_TOOLS_CMAKE_ARGS}
+        WORKING_DIRECTORY ${BCMI_TOOLS_WORK_DIR}
+    )
+
+    # Build boost tools (b2/bjam, bcp) for host arch
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} --build .
+        WORKING_DIRECTORY ${BCMI_TOOLS_WORK_DIR}
+    )
+  endif()
+
+
+  # Configure boost libs
+  list(APPEND BCM_LIBS_CMAKE_ARGS -DBOOST_BUILD_LIBS=ON)
+  list(APPEND BCM_LIBS_CMAKE_ARGS -Dboost.staticlibs=ON)
+  list(APPEND BCM_LIBS_CMAKE_ARGS ${BCM_COMMON_CMAKE_ARGS})
+  
   file(MAKE_DIRECTORY ${BCMI_WORK_DIR})
   execute_process(
     COMMAND
