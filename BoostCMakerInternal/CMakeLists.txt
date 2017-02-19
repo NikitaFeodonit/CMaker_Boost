@@ -360,7 +360,7 @@ set(Boost_INSTALL_CMAKEDIR
 )
 
 configure_file(
-  ${BB_SRC_DIR}/BoostWriteCMakeImportFiles.cmake.in
+  ${PROJECT_SOURCE_DIR}/BoostWriteCMakeImportFiles.cmake.in
   ${PROJECT_BINARY_DIR}/BoostWriteCMakeImportFiles.cmake
   @ONLY
 )
