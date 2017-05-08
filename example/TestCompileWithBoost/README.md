@@ -2,7 +2,7 @@
 
 For building the example:
 
-```cmake
+```bash
 git clone https://github.com/NikitaFeodonit/BoostCMaker
 cp -r BoostCMaker/example/TestCompileWithBoost/ ./
 mkdir TestCompileWithBoost/cmake
