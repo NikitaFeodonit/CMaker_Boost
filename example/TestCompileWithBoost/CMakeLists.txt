@@ -25,8 +25,12 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
 project(test_compile_with_boost CXX)
 
+
+#-----------------------------------------------------------------------
 # Set vars for BoostCMaker and FindBoost.
-set(boost_VERSION "1.63.0")
+#-----------------------------------------------------------------------
+
+set(boost_VERSION "1.64.0")
 set(boost_COMPONENTS filesystem system)
 #set(BUILD_SHARED_LIBS ON)
 set(Boost_USE_STATIC_LIBS ON)
@@ -36,9 +40,17 @@ set(Boost_USE_STATIC_LIBS ON)
 set(bcm_STATUS_PRINT ON)
 set(bcm_DOWNLOAD_DIR ${PROJECT_BINARY_DIR})
 
+
+#-----------------------------------------------------------------------
+# Build and install the boost.
+#-----------------------------------------------------------------------
+
+include(${PROJECT_SOURCE_DIR}/cmake/BoostCMaker/BoostCMaker.cmake)
+
 # Make compile, build and install the boost at a config CMake phase,
 # generate the config file BoostConfig.
-include(${PROJECT_SOURCE_DIR}/cmake/BoostCMaker/BoostCMaker.cmake)
+# For specified boost components dependence components will builded too.
+
 # Install specified boost version and components.
 BoostCMaker(VERSION ${boost_VERSION} COMPONENTS ${boost_COMPONENTS})
 # Install default boost version and only headers.
@@ -48,12 +60,22 @@ BoostCMaker(VERSION ${boost_VERSION} COMPONENTS ${boost_COMPONENTS})
 # Install default boost version and all libs.
 #BoostCMaker(COMPONENTS all)
 
+
+#-----------------------------------------------------------------------
+# Configure for find_package.
+#-----------------------------------------------------------------------
+
 # Set CMake's search path for the config file BoostConfig.
 set(CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}")
 
 if(ANDROID)
     set(CMAKE_FIND_ROOT_PATH "${CMAKE_INSTALL_PREFIX}")
 endif()
+
+
+#-----------------------------------------------------------------------
+# find_package
+#-----------------------------------------------------------------------
 
 # Use newly got boost library.
 find_package(Boost ${boost_VERSION} REQUIRED CONFIG COMPONENTS ${boost_COMPONENTS})
@@ -68,9 +90,14 @@ find_package(Boost ${boost_VERSION} REQUIRED CONFIG COMPONENTS ${boost_COMPONENT
 #    find_package(Boost 1.63 REQUIRED COMPONENTS filesystem system)
 #endif()
 
-# Use/Link it to a boost library, BoostBuilder sets the same variables
+
+#-----------------------------------------------------------------------
+# Link to a boost library
+#-----------------------------------------------------------------------
+
+# Use/Link it to a boost library, BoostCMaker sets the same variables
 # to libs as FindBoost does, but these are imported targets so
-# always expand to the exact library used
+# always expand to the exact library used.
 #target_include_directories(target_name PRIVATE ${Boost_INCLUDE_DIRS})
 #target_link_libraries(target_name ${Boost_LIBRARIES})
 
