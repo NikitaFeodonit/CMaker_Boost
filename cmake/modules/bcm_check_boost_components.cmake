@@ -26,9 +26,17 @@
 # Based on the hunter,
 # https://github.com/ruslo/hunter
 
+include(CMakeParseArguments) # cmake_parse_arguments
+
 include(bcm_fatal_error)
 
-function(bcm_check_boost_components boost_version boost_components)
+function(bcm_check_boost_components)
+
+  cmake_parse_arguments(boost "" "VERSION" "COMPONENTS" "${ARGV}")
+  # -> boost_VERSION
+  # -> boost_COMPONENTS
+
+
   macro(boost_component_list name version)
     list(APPEND BOOST_COMPONENT_NAMES ${name})
     set(BOOST_COMPONENT_${name}_VERSION ${version})
@@ -65,12 +73,10 @@ function(bcm_check_boost_components boost_version boost_components)
   boost_component_list(type_erasure 1.54.0)
   boost_component_list(wave 1.33.0)
 
-  bcm_print_var_value(boost_components)
-
-  string(COMPARE EQUAL "${boost_components}" "only_headers" only_headers)
+  string(COMPARE EQUAL "${boost_COMPONENTS}" "only_headers" only_headers)
   if(only_headers)
     foreach(name IN LISTS BOOST_COMPONENT_NAMES)
-      if(NOT ${boost_version} VERSION_LESS BOOST_COMPONENT_${name}_VERSION)
+      if(NOT ${boost_VERSION} VERSION_LESS BOOST_COMPONENT_${name}_VERSION)
         list(APPEND boost_libs ${name})
       endif()
     endforeach()
@@ -79,14 +85,14 @@ function(bcm_check_boost_components boost_version boost_components)
     return()
   endif()
 
-  foreach(name IN LISTS boost_components)
+  foreach(name IN LISTS boost_COMPONENTS)
     string(COMPARE EQUAL "${name}" "all" build_all_libs)
     if(build_all_libs)
       return()
     endif()
   
-    if(${boost_version} VERSION_LESS BOOST_COMPONENT_${name}_VERSION)
-      bcm_fatal_error("Boost of version ${boost_version} don't have the component ${name}.")
+    if(${boost_VERSION} VERSION_LESS BOOST_COMPONENT_${name}_VERSION)
+      bcm_fatal_error("Boost of version ${boost_VERSION} don't have the component ${name}.")
     endif()
 
     if(ANDROID)
@@ -100,27 +106,27 @@ function(bcm_check_boost_components boost_version boost_components)
       # Boost.Context in 1.61.0 and earlier don't support mips64.
       # Boost.Coroutine depends on Boost.Context.
       if((ANDROID_SYSROOT_ABI STREQUAL arm64
-              AND NOT bcm_Boost_VERSION VERSION_GREATER "1.57.0")
+              AND NOT boost_VERSION VERSION_GREATER "1.57.0")
           OR (ANDROID_SYSROOT_ABI STREQUAL mips64
-              AND NOT bcm_Boost_VERSION VERSION_GREATER "1.61.0"))
+              AND NOT boost_VERSION VERSION_GREATER "1.61.0"))
         string(COMPARE EQUAL "${name}" "context" bad_component)
         if(bad_component)
-          bcm_fatal_error("Boost.Context in boost of version ${bcm_Boost_VERSION} don't support ${ANDROID_SYSROOT_ABI}.")
+          bcm_fatal_error("Boost.Context in boost of version ${boost_VERSION} don't support ${ANDROID_SYSROOT_ABI}.")
         endif()
 
         string(COMPARE EQUAL "${name}" "coroutine" bad_component)
         if(bad_component)
-          bcm_fatal_error("Boost.Coroutine in boost of version ${bcm_Boost_VERSION} don't support ${ANDROID_SYSROOT_ABI}.")
+          bcm_fatal_error("Boost.Coroutine in boost of version ${boost_VERSION} don't support ${ANDROID_SYSROOT_ABI}.")
         endif()
       endif()
       
       # Starting from 1.59.0, there is Boost.Coroutine2 library,
       # which depends on Boost.Context too.
       if(ANDROID_SYSROOT_ABI STREQUAL mips64
-              AND NOT bcm_Boost_VERSION VERSION_GREATER "1.61.0")
+              AND NOT boost_VERSION VERSION_GREATER "1.61.0")
         string(COMPARE EQUAL "${name}" "coroutine2" bad_component)
         if(bad_component)
-          bcm_fatal_error("Boost.Coroutine2 in boost of version ${bcm_Boost_VERSION} don't support ${ANDROID_SYSROOT_ABI}.")
+          bcm_fatal_error("Boost.Coroutine2 in boost of version ${boost_VERSION} don't support ${ANDROID_SYSROOT_ABI}.")
         endif()
       endif()
 

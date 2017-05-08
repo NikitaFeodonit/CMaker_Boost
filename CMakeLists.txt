@@ -35,6 +35,8 @@ if(NOT DEFINED boost_VERSION)
 endif()
 if(NOT DEFINED boost_COMPONENTS)
   set(only_headers ON)
+else()
+  separate_arguments(boost_COMPONENTS)
 endif()
 
 if(default_boost_version AND only_headers)

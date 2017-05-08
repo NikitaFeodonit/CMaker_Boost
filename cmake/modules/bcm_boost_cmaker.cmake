@@ -104,7 +104,7 @@ function(bcm_boost_cmaker)
     bcm_fatal_error("COMPONENTS can not contain 'all' keyword with something others.")
   endif()
 
-  bcm_check_boost_components(${boost_VERSION} ${boost_COMPONENTS})
+  bcm_check_boost_components(VERSION ${boost_VERSION} COMPONENTS ${boost_COMPONENTS})
   
   bcm_print_var_value(bcm_NOT_BUILD_LIBRARIES)
 
