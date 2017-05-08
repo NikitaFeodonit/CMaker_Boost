@@ -39,9 +39,7 @@ function(BoostCMaker)
   # See also
   # http://stackoverflow.com/a/20989991
   # http://stackoverflow.com/a/20985057
-  bcm_print_var_value(boost_COMPONENTS)
   string (REPLACE ";" " " boost_COMPONENTS "${boost_COMPONENTS}")
-  bcm_print_var_value(boost_COMPONENTS)
 
 
   #-----------------------------------------------------------------------

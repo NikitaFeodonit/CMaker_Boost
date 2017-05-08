@@ -47,8 +47,6 @@ include(bcm_get_boost_download_params)
 include(bcm_set_cmake_flags)
 include(bcm_status_debug)
 
-include(bcm_print_var_value) # TODO: remove it
-
 # To find bcm templates dir.
 set(bcm_TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
@@ -105,8 +103,6 @@ function(bcm_boost_cmaker)
   endif()
 
   bcm_check_boost_components(VERSION ${boost_VERSION} COMPONENTS ${boost_COMPONENTS})
-  
-  bcm_print_var_value(bcm_NOT_BUILD_LIBRARIES)
 
   bcm_get_version_parts(${boost_VERSION}
       boost_MAJOR_VERSION boost_MINOR_VERSION boost_PATCH_VERSION boost_TWEAK_VERSION)
