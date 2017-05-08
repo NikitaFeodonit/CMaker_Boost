@@ -1,3 +1,29 @@
+# ****************************************************************************
+#  Project:  BoostCMaker
+#  Purpose:  A CMake build script for Boost Libraries
+#  Author:   NikitaFeodonit, nfeodonit@yandex.com
+# ****************************************************************************
+#    Copyright (c) 2017 NikitaFeodonit
+#
+#    This file is part of the BoostCMaker project.
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published
+#    by the Free Software Foundation, either version 3 of the License,
+#    or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program. If not, see <http://www.gnu.org/licenses/>.
+# ****************************************************************************
+
+# Based on the BoostBuilder,
+# https://github.com/drbenmorgan/BoostBuilder
+
 # - List all dynamic libraries installed by the Boost port
 # Simply glob the lib/root directory for .so/.dylib files
 # Implemented as a CMake script so we can run it post-install of the
@@ -149,28 +175,72 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(BOOST_LIBDIR "@CMAKE_INSTALL_PREFIX@/lib")
-set(BOOST_CMAKEDIR "${BOOST_LIBDIR}/cmake/Boost-@Boost_VERSION@")
+set(BOOST_CMAKEDIR "${BOOST_LIBDIR}/cmake/Boost-@boost_VERSION@")
 set(BOOST_LIBPREFIX "@CMAKE_SHARED_LIBRARY_PREFIX@")
 set(BOOST_SHARED_LIBSUFFIX "@CMAKE_SHARED_LIBRARY_SUFFIX@")
 set(BOOST_STATIC_LIBSUFFIX "@CMAKE_STATIC_LIBRARY_SUFFIX@")
 
-set(BOOST_THREADING_MODELS multithread)
-set(BOOST_HAS_ST @boost.singlethread@)
-if(BOOST_HAS_ST)
-  list(APPEND BOOST_THREADING_MODELS singlethread)
+
+set(BOOST_HAS_MT @Boost_USE_MULTITHREADED@)
+
+if(NOT DEFINED BOOST_HAS_MT)
+  set(BOOST_HAS_MT ON)
 endif()
 
-set(BOOST_HAS_STATIC @boost.staticlibs@)
-set(BOOST_LINKING_MODELS shared)
-if(BOOST_HAS_STATIC)
-  list(APPEND BOOST_LINKING_MODELS static)
+if(BOOST_HAS_MT)
+  set(BOOST_THREADING_MODELS multithread)
+else()
+  set(BOOST_THREADING_MODELS singlethread)
 endif()
 
-set(BOOST_HAS_DEBUG @boost.debuglibs@)
-set(BOOST_VARIANT_MODELS release)
-if(BOOST_HAS_DEBUG)
-  list(APPEND BOOST_VARIANT_MODELS debug)
+#set(BOOST_THREADING_MODELS multithread)
+#set(BOOST_HAS_ST @boost.singlethread@)
+#if(BOOST_HAS_ST)
+#  list(APPEND BOOST_THREADING_MODELS singlethread)
+#endif()
+
+
+set(Boost_SHARED_LIBS_FOUND @BUILD_SHARED_LIBS@)
+set(Boost_STATIC_LIBS_FOUND @Boost_USE_STATIC_LIBS@)
+
+if(NOT DEFINED Boost_SHARED_LIBS_FOUND AND NOT DEFINED Boost_STATIC_LIBS_FOUND)
+  set(Boost_SHARED_LIBS_FOUND OFF)
+  set(Boost_STATIC_LIBS_FOUND ON)
 endif()
+
+if(Boost_SHARED_LIBS_FOUND AND Boost_STATIC_LIBS_FOUND)
+  message(FATAL_ERROR "Can not be set both BUILD_SHARED_LIBS AND Boost_USE_STATIC_LIBS")
+elseif(Boost_SHARED_LIBS_FOUND AND NOT Boost_STATIC_LIBS_FOUND)
+  set(BOOST_LINKING_MODELS shared)
+  set(BOOST_LIBSUFFIX ${BOOST_SHARED_LIBSUFFIX})
+elseif(NOT Boost_SHARED_LIBS_FOUND AND Boost_STATIC_LIBS_FOUND)
+  set(BOOST_LINKING_MODELS static)
+  set(BOOST_LIBSUFFIX ${BOOST_STATIC_LIBSUFFIX})
+else()
+  set(BOOST_LINKING_MODELS static)
+  set(BOOST_LIBSUFFIX ${BOOST_STATIC_LIBSUFFIX})
+endif()
+
+#set(BOOST_HAS_STATIC @boost.staticlibs@)
+#set(BOOST_LINKING_MODELS shared)
+#if(BOOST_HAS_STATIC)
+#  list(APPEND BOOST_LINKING_MODELS static)
+#endif()
+
+
+set(BOOST_BUILD_TYPE @CMAKE_BUILD_TYPE@)
+if(BOOST_BUILD_TYPE STREQUAL "Release")
+  set(BOOST_VARIANT_MODELS release)
+elseif(BOOST_BUILD_TYPE STREQUAL "Debug")
+  set(BOOST_VARIANT_MODELS debug)
+endif()
+
+#set(BOOST_HAS_DEBUG @boost.debuglibs@)
+#set(BOOST_VARIANT_MODELS release)
+#if(BOOST_HAS_DEBUG)
+#  list(APPEND BOOST_VARIANT_MODELS debug)
+#endif()
+
 
 #-----------------------------------------------------------------------
 # Determine which components were installed
@@ -178,9 +248,9 @@ endif()
 # with the globbing and regexing!
 set(BOOST_COMPONENTS)
 
-file(GLOB BOOST_COMPONENTS RELATIVE "${BOOST_LIBDIR}" "${BOOST_LIBDIR}/${BOOST_LIBPREFIX}boost_*${BOOST_SHARED_LIBSUFFIX}")
+file(GLOB BOOST_COMPONENTS RELATIVE "${BOOST_LIBDIR}" "${BOOST_LIBDIR}/${BOOST_LIBPREFIX}boost_*${BOOST_LIBSUFFIX}")
 
-string(REPLACE "${BOOST_SHARED_LIBSUFFIX}" "" BOOST_COMPONENTS "${BOOST_COMPONENTS}")
+string(REPLACE "${BOOST_LIBSUFFIX}" "" BOOST_COMPONENTS "${BOOST_COMPONENTS}")
 string(REGEX REPLACE "libboost_|(-d|-mt)" "" BOOST_COMPONENTS "${BOOST_COMPONENTS}")
 
 list(REMOVE_DUPLICATES BOOST_COMPONENTS)
@@ -231,7 +301,7 @@ foreach(_lm ${BOOST_LINKING_MODELS})
 
     # Configure the front end lib depends file for the link+thread
     # model
-    configure_file(@PROJECT_SOURCE_DIR@/BoostLibraryDepends.cmake.in
+    configure_file(@bcm_TEMPLATES_DIR@/BoostLibraryDepends.cmake.in
       @PROJECT_BINARY_DIR@/BoostLibraryDepends-${_lm}-${_tm}.cmake
       @ONLY
       )

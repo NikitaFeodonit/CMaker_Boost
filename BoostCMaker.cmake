@@ -21,67 +21,93 @@
 #    along with this program. If not, see <http://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-# to find BoostCMakerInternal dir
-set(BCM_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-function(boost_cmaker)
+# To find bcm source dir.
+# TODO: prevent multiply includes for CMAKE_MODULE_PATH
+set(bcm_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
+list(APPEND CMAKE_MODULE_PATH "${bcm_SRC_DIR}/cmake/modules")
+
+# See description for "bcm_boost_cmaker()" for params and vars.
+function(BoostCMaker)
   cmake_minimum_required(VERSION 3.2)
-  
-  # BCM_COMMON_CMAKE_ARGS
-  if(SUPRESS_VERBOSE_OUTPUT)
-    list(APPEND BCM_COMMON_CMAKE_ARGS
-      -DSUPRESS_VERBOSE_OUTPUT=${SUPRESS_VERBOSE_OUTPUT}
-    )
-  endif()
+
+  cmake_parse_arguments(boost "" "VERSION" "COMPONENTS" "${ARGV}")
+  # -> boost_VERSION
+  # -> boost_COMPONENTS
+
+
+  #-----------------------------------------------------------------------
+  # Build dirs
+  #-----------------------------------------------------------------------
+
+  set(bcm_bin_dir_name "BoostCMaker")
+  set(bcm_bin_dir "${CMAKE_CURRENT_BINARY_DIR}/${bcm_bin_dir_name}")
+
+
+  #-----------------------------------------------------------------------
+  # Build args
+  #-----------------------------------------------------------------------
+
+  set(bcm_CMAKE_ARGS)
+
+  # Standard CMake vars
   if(CMAKE_INSTALL_PREFIX)
-    list(APPEND BCM_COMMON_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
     )
   endif()
   if(CMAKE_BUILD_TYPE)
-    list(APPEND BCM_COMMON_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     )
   endif()
   if(BUILD_SHARED_LIBS)
-    list(APPEND BCM_COMMON_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
     )
   endif()
-  
-  
-  # BCM_LIBS_CMAKE_ARGS
+
   if(CMAKE_TOOLCHAIN_FILE)
-    list(APPEND BCM_LIBS_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
     )
   endif()
   if(CMAKE_GENERATOR)
-    list(APPEND BCM_LIBS_CMAKE_ARGS
-      -G "${CMAKE_GENERATOR}"
+    list(APPEND bcm_CMAKE_ARGS
+      -G "${CMAKE_GENERATOR}" # TODO: check it with debug message
     )
   endif()
   if(CMAKE_MAKE_PROGRAM)
-    list(APPEND BCM_LIBS_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
     )
   endif()
 
-
+  # Vars from FindBoost.cmake
+  # TODO: add more vars
+  if(Boost_USE_STATIC_LIBS)
+    list(APPEND bcm_CMAKE_ARGS
+      -DBoost_USE_STATIC_LIBS=${Boost_USE_STATIC_LIBS}
+    )
+  endif()
+  if(Boost_USE_MULTITHREADED)
+    list(APPEND bcm_CMAKE_ARGS
+      -DBoost_USE_MULTITHREADED=${Boost_USE_MULTITHREADED}
+    )
+  endif()
+  
+  # Android specifics
   if(ANDROID)
-    list(APPEND BoostLibs_CMAKE_ARGS
+    # TODO: get new vars from NDK's toolchain
+    # TODO: check if var is defined
+  
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID=ON
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_NDK=${ANDROID_NDK}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
-      -DANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}
-    )
-    list(APPEND BoostLibs_CMAKE_ARGS
-      -DANDROID_TOOLCHAIN_NAME=${ANDROID_TOOLCHAIN_NAME}
-    )
-  
+
     # Configurable variables from
     # android-sdk/cmake/3.6.3155560/android.toolchain.cmake
     # (package version 3.6.3155560).
@@ -94,112 +120,124 @@ function(boost_cmaker)
     # The exception is ANDROID_TOOLCHAIN vs NDK_TOOLCHAIN_VERSION.
     # Since we only have one version of each gcc and clang, specifying a version
     # doesn't make much sense.
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_ABI=${ANDROID_ABI}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_PLATFORM=${ANDROID_PLATFORM}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_STL=${ANDROID_STL}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_PIE=${ANDROID_PIE}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_CPP_FEATURES=${ANDROID_CPP_FEATURES}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_ALLOW_UNDEFINED_SYMBOLS=${ANDROID_ALLOW_UNDEFINED_SYMBOLS}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_ARM_MODE=${ANDROID_ARM_MODE}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_ARM_NEON=${ANDROID_ARM_NEON}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_DISABLE_NO_EXECUTE=${ANDROID_DISABLE_NO_EXECUTE}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_DISABLE_RELRO=${ANDROID_DISABLE_RELRO}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_DISABLE_FORMAT_STRING_CHECKS=${ANDROID_DISABLE_FORMAT_STRING_CHECKS}
     )
-    list(APPEND BoostLibs_CMAKE_ARGS
+    list(APPEND bcm_CMAKE_ARGS
       -DANDROID_CCACHE=${ANDROID_CCACHE}
     )
-  endif()
-  
-  
-  # List libraries to build. Dependence libs will builded too.
-  # The complete list of libraries provided by Boost can be found by
-  # running the bootstrap.sh script supplied with Boost as:
-  #  ./bootstrap.sh --with-libraries=all --show-libraries
-  set(Boost_BUILD_LIBRARIES
-    filesystem
-  )
-  
-  list(APPEND BCM_COMMON_CMAKE_ARGS
-    -DBoost_BUILD_LIBRARIES=${Boost_BUILD_LIBRARIES}
-  )
-  
-  # Download dir for boost sources
-  # TODO: receive from external project too
-  list(APPEND BCM_COMMON_CMAKE_ARGS
-    -DBoost_DOWNLOAD_DIR=${PROJECT_BINARY_DIR}
-  )
-  
-
-  set(BCMI_DIR_NAME "BoostCMakerInternal")
-  set(BCMI_SRC_DIR  "${BCM_SRC_DIR}/${BCMI_DIR_NAME}")
-  set(BCMI_WORK_DIR "${CMAKE_CURRENT_BINARY_DIR}/${BCMI_DIR_NAME}")
-
-
-  if(CMAKE_CROSSCOMPILING)
-    # Config boost tools (b2/bjam, bcp) for host arch
-    set(BCMI_TOOLS_DIR_NAME "${BCMI_DIR_NAME}Tools")
-    set(BCMI_TOOLS_WORK_DIR
-      "${CMAKE_CURRENT_BINARY_DIR}/${BCMI_TOOLS_DIR_NAME}"
+    list(APPEND bcm_CMAKE_ARGS
+      -DANDROID_UNIFIED_HEADERS=${ANDROID_UNIFIED_HEADERS}
     )
 
-    list(APPEND BCM_TOOLS_CMAKE_ARGS -DBOOST_BUILD_TOOLS=ON)
-    list(APPEND BCM_TOOLS_CMAKE_ARGS ${BCM_COMMON_CMAKE_ARGS})
-
-    file(MAKE_DIRECTORY ${BCMI_TOOLS_WORK_DIR})
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} ${BCMI_SRC_DIR} ${BCM_TOOLS_CMAKE_ARGS}
-        WORKING_DIRECTORY ${BCMI_TOOLS_WORK_DIR}
+    list(APPEND bcm_CMAKE_ARGS
+      -DANDROID_SYSROOT_ABI=${ANDROID_SYSROOT_ABI} # arch
+    )
+    list(APPEND bcm_CMAKE_ARGS
+      -DANDROID_PLATFORM_LEVEL=${ANDROID_PLATFORM_LEVEL}
     )
 
-    # Build boost tools (b2/bjam, bcp) for host arch
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} --build .
-        WORKING_DIRECTORY ${BCMI_TOOLS_WORK_DIR}
+    # Variables are only for compatibility.
+    list(APPEND bcm_CMAKE_ARGS
+      -DANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}
+    )
+    list(APPEND bcm_CMAKE_ARGS
+      -DANDROID_TOOLCHAIN_NAME=${ANDROID_TOOLCHAIN_NAME}
     )
   endif()
+  
+  
+  #-----------------------------------------------------------------------
+  # Args for bcm_boost_cmaker.
+  #-----------------------------------------------------------------------
 
+  # Download dir for boost sources.
+  if(boost_VERSION)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dboost_VERSION=${boost_VERSION}
+    )
+  endif()
+  if(boost_COMPONENTS)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dboost_COMPONENTS=${boost_COMPONENTS}
+    )
+  endif()
+  if(bcm_DOWNLOAD_DIR)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dbcm_DOWNLOAD_DIR=${bcm_DOWNLOAD_DIR}
+    )
+  endif()
+  if(bcm_BUILD_TOOLS_ONLY)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dbcm_BUILD_TOOLS_ONLY=${bcm_BUILD_TOOLS_ONLY}
+    )
+  endif()
+  if(bcm_BUILD_BCP_TOOL)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dbcm_BUILD_BCP_TOOL=${bcm_BUILD_BCP_TOOL}
+    )
+  endif()
+  if(bcm_STATUS_DEBUG)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dbcm_STATUS_DEBUG=${bcm_STATUS_DEBUG}
+    )
+  endif()
+  if(bcm_STATUS_PRINT)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dbcm_STATUS_PRINT=${bcm_STATUS_PRINT}
+    )
+  endif()
+  
+
+  #-----------------------------------------------------------------------
+  # BUILDING
+  #-----------------------------------------------------------------------
 
   # Configure boost libs
-  list(APPEND BCM_LIBS_CMAKE_ARGS -DBOOST_BUILD_LIBS=ON)
-  list(APPEND BCM_LIBS_CMAKE_ARGS -Dboost.staticlibs=ON)
-  list(APPEND BCM_LIBS_CMAKE_ARGS ${BCM_COMMON_CMAKE_ARGS})
-  
-  file(MAKE_DIRECTORY ${BCMI_WORK_DIR})
+  file(MAKE_DIRECTORY ${bcm_bin_dir})
   execute_process(
     COMMAND
-      ${CMAKE_COMMAND} ${BCMI_SRC_DIR} ${BCM_LIBS_CMAKE_ARGS}
-    WORKING_DIRECTORY ${BCMI_WORK_DIR}
+      ${CMAKE_COMMAND} ${bcm_SRC_DIR} ${bcm_CMAKE_ARGS}
+    WORKING_DIRECTORY ${bcm_bin_dir}
   )
   
   # Build boost libs
   execute_process(
     COMMAND ${CMAKE_COMMAND} --build .
-    WORKING_DIRECTORY ${BCMI_WORK_DIR}
+    WORKING_DIRECTORY ${bcm_bin_dir}
   )
 
 

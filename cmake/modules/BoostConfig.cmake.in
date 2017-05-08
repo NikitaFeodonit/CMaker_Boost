@@ -1,3 +1,29 @@
+# ****************************************************************************
+#  Project:  BoostCMaker
+#  Purpose:  A CMake build script for Boost Libraries
+#  Author:   NikitaFeodonit, nfeodonit@yandex.com
+# ****************************************************************************
+#    Copyright (c) 2017 NikitaFeodonit
+#
+#    This file is part of the BoostCMaker project.
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published
+#    by the Free Software Foundation, either version 3 of the License,
+#    or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program. If not, see <http://www.gnu.org/licenses/>.
+# ****************************************************************************
+
+# Based on the BoostBuilder,
+# https://github.com/drbenmorgan/BoostBuilder
+
 # - Boost CMake Configuration File to replace FindBoost
 # Use of find_package's config mode plus use if imported targets
 # provides a most robust location mechanism.
@@ -59,38 +85,77 @@ get_filename_component(__cfl_boost_config_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 #-----------------------------------------------------------------------
 # Versioning variables for compatibility with FindBoost
 #
-set(Boost_MAJOR_VERSION "@Boost_MAJOR_VERSION@")
-set(Boost_MINOR_VERSION "@Boost_MINOR_VERSION@")
-set(Boost_SUBMINOR_VERSION "@Boost_SUBMINOR_VERSION@")
+set(Boost_MAJOR_VERSION "@boost_MAJOR_VERSION@")
+set(Boost_MINOR_VERSION "@boost_MINOR_VERSION@")
+set(Boost_SUBMINOR_VERSION "@boost_PATCH_VERSION@")
 
 #-----------------------------------------------------------------------
 # Configure variables for compatibility with FindBoost's link/thread
 # model selection.
 #
 # - Boost_USE_STATIC_LIBS
-set(Boost_LINKMODEL_TAG "-shared")
-set(Boost_STATIC_LIBS_FOUND @boost.staticlibs@)
+set(Boost_SHARED_LIBS_FOUND @BUILD_SHARED_LIBS@)
+set(Boost_STATIC_LIBS_FOUND @Boost_USE_STATIC_LIBS@)
 
-if(Boost_USE_STATIC_LIBS)
-  if(Boost_STATIC_LIBS_FOUND)
-    set(Boost_LINKMODEL_TAG "-static")
-  else()
-    message(FATAL_ERROR "The found Boost installation, loaded from\n${__cfl_boost_config_dir}\n does not provide the static variants of the Boost libraries.")
-  endif()
+if(NOT DEFINED Boost_SHARED_LIBS_FOUND AND NOT DEFINED Boost_STATIC_LIBS_FOUND)
+  set(Boost_SHARED_LIBS_FOUND OFF)
+  set(Boost_STATIC_LIBS_FOUND ON)
 endif()
+
+if(Boost_USE_STATIC_LIBS AND NOT Boost_STATIC_LIBS_FOUND)
+  message(FATAL_ERROR "The found Boost installation, loaded from\n${__cfl_boost_config_dir}\n does not provide the static variants of the Boost libraries.")
+endif()
+
+if(Boost_SHARED_LIBS_FOUND AND Boost_STATIC_LIBS_FOUND)
+  message(FATAL_ERROR "Can not be set both BUILD_SHARED_LIBS AND Boost_USE_STATIC_LIBS")
+elseif(Boost_SHARED_LIBS_FOUND AND NOT Boost_STATIC_LIBS_FOUND)
+  set(Boost_LINKMODEL_TAG "-shared")
+elseif(NOT Boost_SHARED_LIBS_FOUND AND Boost_STATIC_LIBS_FOUND)
+  set(Boost_LINKMODEL_TAG "-static")
+else()
+  set(Boost_LINKMODEL_TAG "-static")
+endif()
+
+#set(Boost_LINKMODEL_TAG "-shared")
+#set(Boost_STATIC_LIBS_FOUND @boost.staticlibs@)
+#if(Boost_USE_STATIC_LIBS)
+#  if(Boost_STATIC_LIBS_FOUND)
+#    set(Boost_LINKMODEL_TAG "-static")
+#  else()
+#    message(FATAL_ERROR "The found Boost installation, loaded from\n${__cfl_boost_config_dir}\n does not provide the static variants of the Boost libraries.")
+#  endif()
+#endif()
+
 
 # - Boost_USE_MULTITHREADED
-set(Boost_THREADMODEL_TAG "-multithread")
-set(Boost_MULTITHREADED_FOUND ON)
-set(Boost_SINGLETHREADED_FOUND @boost.singlethread@)
+set(Boost_MULTITHREADED_FOUND @Boost_USE_MULTITHREADED@)
 
-if(DEFINED Boost_USE_MULTITHREADED AND NOT Boost_USE_MULTITHREADED)
-  if(Boost_SINGLETHREADED_FOUND)
-    set(Boost_THREADMODEL_TAG "-singlethread")
-  else()
-    message(FATAL_ERROR "The found Boost installation, loaded from\n${__cfl_boost_config_dir}\n does not provide the single threaded variants of the Boost libraries.")
-  endif()
+if(NOT DEFINED Boost_MULTITHREADED_FOUND)
+  set(Boost_MULTITHREADED_FOUND ON)
 endif()
+
+if(DEFINED Boost_USE_MULTITHREADED AND NOT Boost_USE_MULTITHREADED AND Boost_MULTITHREADED_FOUND)
+  message(FATAL_ERROR "The found Boost installation, loaded from\n${__cfl_boost_config_dir}\n does not provide the single threaded variants of the Boost libraries.")
+endif()
+
+if(Boost_MULTITHREADED_FOUND)
+  set(Boost_THREADMODEL_TAG "-multithread")
+else()
+  set(Boost_THREADMODEL_TAG "-singlethread")
+endif()
+
+#set(Boost_THREADMODEL_TAG "-multithread")
+#set(Boost_MULTITHREADED_FOUND ON)
+#set(Boost_SINGLETHREADED_FOUND @boost.singlethread@)
+
+#if(DEFINED Boost_USE_MULTITHREADED AND NOT Boost_USE_MULTITHREADED)
+#  if(Boost_SINGLETHREADED_FOUND)
+#    set(Boost_THREADMODEL_TAG "-singlethread")
+#  else()
+#    message(FATAL_ERROR "The found Boost installation, loaded from\n${__cfl_boost_config_dir}\n does not provide the single threaded variants of the Boost libraries.")
+#  endif()
+#endif()
+
 
 #-----------------------------------------------------------------------
 # Set the header path
