@@ -7,12 +7,12 @@ Building is tested on the Linux, Android. Other systems are in a progress.
 
 ### Based on the:
 
-BoostBuilder,  <br />
-https://github.com/drbenmorgan/BoostBuilder  <br />
+<b>BoostBuilder</b><br />
+https://github.com/drbenmorgan/BoostBuilder
 
-build-boost.sh from CrystaX NDK,  <br />
+build-boost.sh from <b>CrystaX NDK</b><br />
 https://www.crystax.net/  <br />
-https://github.com/crystax/android-platform-ndk/blob/master/build/tools/build-boost.sh  <br />
+https://github.com/crystax/android-platform-ndk/blob/master/build/tools/build-boost.sh
 
-hunter,  <br />
+<b>hunter<b><br />
 https://github.com/ruslo/hunter
