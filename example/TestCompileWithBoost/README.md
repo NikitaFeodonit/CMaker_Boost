@@ -46,3 +46,7 @@ Options for Android's building with 'make' command:
  "-GAndroid Gradle - Unix Makefiles" \
  -DCMAKE_MAKE_PROGRAM=make \
 ```
+
+For other Android's CMake options see:<br />
+https://developer.android.com/ndk/guides/cpp-support.html  <br />
+https://developer.android.com/ndk/guides/cmake.html
