@@ -47,6 +47,9 @@ include(bcm_get_boost_download_params)
 include(bcm_set_cmake_flags)
 include(bcm_status_debug)
 
+include(bcm_print_debug_message)
+include(bcm_print_var_value)
+
 # To find bcm templates dir.
 set(bcm_TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
@@ -60,7 +63,8 @@ set(bcm_TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}")
 #   bcm_STATUS_DEBUG
 #   bcm_STATUS_PRINT
 
-#   bcm_DOWNLOAD_DIR
+#   bcm_DOWNLOAD_DIR  -- for downloaded files
+#   bcm_SRC_DIR       -- for unpacked sources
 
 #   bcm_BUILD_TOOLS_ONLY
 #   bcm_BUILD_BCP_TOOL
@@ -114,10 +118,11 @@ function(bcm_boost_cmaker)
     set(bcm_DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR})
   endif()
 
-  # TODO: set src dir from parent project
-  set(boost_src_dir "${bcm_DOWNLOAD_DIR}/${boost_src_dir_name}"
-    CACHE PATH "Directory to extract tar file with boost sources."
-  )
+  if(NOT bcm_SRC_DIR)
+    set(bcm_SRC_DIR "${bcm_DOWNLOAD_DIR}")
+  endif()
+  
+  set(boost_src_dir "${bcm_SRC_DIR}/${boost_src_dir_name}")
   set(boost_tar_file "${bcm_DOWNLOAD_DIR}/${boost_tar_file_name}")
 
 
@@ -212,6 +217,9 @@ function(bcm_boost_cmaker)
   #-----------------------------------------------------------------------
   # b2_args
   #-----------------------------------------------------------------------
+
+  # TODO: --build-dir=DIR 
+  # Build in this location instead of building within the distribution tree.
 
   list(APPEND b2_args "toolset=${toolset_full_name}")
 
@@ -523,9 +531,10 @@ function(bcm_boost_cmaker)
     # https://public.kitware.com/Bug/view.php?id=14266
     set(log_opts LOG_CONFIGURE 1 LOG_BUILD 1 LOG_INSTALL 1)
     set(step_log_opts LOG 1)
+    # TODO: check file log path
     get_filename_component(x "@bcm_PACKAGE_SOURCE_DIR@/.." ABSOLUTE)
     bcm_status_print(
-        "For progress check log files in directory: ${boost_src_dir}"
+        "For progress check log files in directory: ${bcm_SRC_DIR}"
     )
   else()
     set(log_opts "")

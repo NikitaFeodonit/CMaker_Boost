@@ -24,8 +24,11 @@
 
 # To find bcm source dir.
 # TODO: prevent multiply includes for CMAKE_MODULE_PATH
-set(bcm_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
-list(APPEND CMAKE_MODULE_PATH "${bcm_SRC_DIR}/cmake/modules")
+set(bcm_BoostCMaker_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
+list(APPEND CMAKE_MODULE_PATH "${bcm_BoostCMaker_SRC_DIR}/cmake/modules")
+
+include(bcm_print_debug_message)
+include(bcm_print_var_value)
 
 # See description for "bcm_boost_cmaker()" for params and vars.
 function(BoostCMaker)
@@ -206,6 +209,11 @@ function(BoostCMaker)
       -Dbcm_DOWNLOAD_DIR=${bcm_DOWNLOAD_DIR}
     )
   endif()
+  if(bcm_SRC_DIR)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dbcm_SRC_DIR=${bcm_SRC_DIR}
+    )
+  endif()
   if(bcm_BUILD_TOOLS_ONLY)
     list(APPEND bcm_CMAKE_ARGS
       -Dbcm_BUILD_TOOLS_ONLY=${bcm_BUILD_TOOLS_ONLY}
@@ -236,7 +244,7 @@ function(BoostCMaker)
   file(MAKE_DIRECTORY ${bcm_bin_dir})
   execute_process(
     COMMAND
-      ${CMAKE_COMMAND} ${bcm_SRC_DIR} ${bcm_CMAKE_ARGS}
+      ${CMAKE_COMMAND} ${bcm_BoostCMaker_SRC_DIR} ${bcm_CMAKE_ARGS}
     WORKING_DIRECTORY ${bcm_bin_dir}
   )
   

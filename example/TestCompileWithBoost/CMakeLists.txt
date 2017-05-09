@@ -26,6 +26,24 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 project(test_compile_with_boost CXX)
 
 
+function(bcm_print_debug_message message)
+  if(bcm_STATUS_DEBUG)
+    string(TIMESTAMP timestamp)
+    if(bcm_CACHE_RUN)
+      set(type "DEBUG (CACHE RUN)")
+    else()
+      set(type "DEBUG")
+    endif()
+    message(STATUS "[bcm *** ${type} *** ${timestamp}] ${message}")
+  endif()
+endfunction()
+
+function(bcm_print_var_value in_var)
+  bcm_print_debug_message("Var: ${in_var} == ${${in_var}}")
+endfunction()
+
+
+
 #-----------------------------------------------------------------------
 # Set vars for BoostCMaker and FindBoost.
 #-----------------------------------------------------------------------
@@ -36,10 +54,13 @@ set(boost_COMPONENTS filesystem system)
 set(Boost_USE_STATIC_LIBS ON)
 
 # Set useful vars for BoostCMaker.
-#set(bcm_STATUS_DEBUG ON)
+set(bcm_STATUS_DEBUG ON)
 set(bcm_STATUS_PRINT ON)
-set(bcm_DOWNLOAD_DIR ${PROJECT_BINARY_DIR})
+set(bcm_DOWNLOAD_DIR "${PROJECT_BINARY_DIR}")
+set(bcm_SRC_DIR "${bcm_DOWNLOAD_DIR}")
 
+bcm_print_var_value(bcm_DOWNLOAD_DIR)
+bcm_print_var_value(bcm_SRC_DIR)
 
 #-----------------------------------------------------------------------
 # Build and install the boost.
@@ -70,6 +91,7 @@ set(CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}")
 
 if(ANDROID)
     set(CMAKE_FIND_ROOT_PATH "${CMAKE_INSTALL_PREFIX}")
+    # TODO: fix default CMAKE_CXX_STANDARD to 11 or 14
 endif()
 
 
