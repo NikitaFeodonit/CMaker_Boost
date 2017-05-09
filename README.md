@@ -5,6 +5,12 @@ Some docs see in a source code. There is also an example with README.
 
 Building is tested on the Linux, Android. Other systems are in a progress.
 
+#### Tested configurations:
+
+Linux: gcc, clang, static, shared.
+
+Android: gcc, clang, static (shared is broken).
+
 ### Based on the:
 
 <b>BoostBuilder</b><br />
