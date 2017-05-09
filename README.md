@@ -1,5 +1,7 @@
 # BoostCMaker
-Build boost with CMake
+Build boost with CMake.
+
+Some docs see in a source code. There is also an example with README.
 
 Based on the BoostBuilder,<br />
 https://github.com/drbenmorgan/BoostBuilder<br />
