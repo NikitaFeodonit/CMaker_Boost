@@ -341,7 +341,8 @@ function(bcm_boost_cmaker)
     # TODO: add work with ICU
     list(APPEND bcm_BOOTSTRAP_ARGS "--without-icu")
     
-#    list(APPEND b2_args "--layout=system")
+    # TODO: set --layout=system for link=shared for Android
+    #list(APPEND b2_args "--layout=system")
     list(APPEND b2_args "--layout=tagged")
     
     # Whether to link to static or shared C and C++ runtime.
