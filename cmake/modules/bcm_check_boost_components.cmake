@@ -87,6 +87,7 @@ function(bcm_check_boost_components)
 
   foreach(name IN LISTS boost_COMPONENTS)
     string(COMPARE EQUAL "${name}" "all" build_all_libs)
+    # TODO: make list for --with-<lib> with excludes from bellow
     if(build_all_libs)
       return()
     endif()

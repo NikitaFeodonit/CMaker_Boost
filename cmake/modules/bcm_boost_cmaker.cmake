@@ -281,7 +281,7 @@ function(bcm_boost_cmaker)
 
   # Do not build, stage, or install the specified <library>.
   # By default, all libraries are built.
-  # TODO: change bcm_NOT_BUILD_LIBRARIES to params NOT COMPONENTS
+  # TODO: change bcm_NOT_BUILD_LIBRARIES to params "NOT COMPONENTS"
   if(only_headers AND bcm_NOT_BUILD_LIBRARIES)
     foreach(not_build_lib ${bcm_NOT_BUILD_LIBRARIES})
       list(APPEND b2_args "--without-${not_build_lib}")
@@ -317,7 +317,6 @@ function(bcm_boost_cmaker)
     #  set(BOOST_ALL_DYN_LINK ON)
     #endif()
   elseif(NOT BUILD_SHARED_LIBS AND Boost_USE_STATIC_LIBS)
-    # TODO: make only static - need correct detection in BoostConfig for FindBoost
     #list(APPEND b2_args "link=shared,static")
     list(APPEND b2_args "link=static")
   else() # both are NOT DEFINED
@@ -328,7 +327,7 @@ function(bcm_boost_cmaker)
   if(Boost_USE_MULTITHREADED)
     list(APPEND b2_args "threading=multi")
   else()
-    # TODO: can we use olny static?
+    # TODO: can we use olny single?
     #list(APPEND b2_args "threading=multi,single")
     list(APPEND b2_args "threading=single")
   endif()
@@ -601,7 +600,7 @@ function(bcm_boost_cmaker)
   endif()
   
   
-  # TODO: Copy source tree to build dir and build with copy.
+  # TODO: Copy source tree to build dir and build with copy (we need it?).
   
   #-----------------------------------------------------------------------
   # Set build parameters and steps

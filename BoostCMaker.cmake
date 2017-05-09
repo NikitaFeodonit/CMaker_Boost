@@ -93,7 +93,7 @@ function(BoostCMaker)
   endif()
 
   # Vars from FindBoost.cmake
-  # TODO: add more vars
+  # TODO: add more vars from FindBoost.cmake
   if(Boost_USE_STATIC_LIBS)
     list(APPEND bcm_CMAKE_ARGS
       -DBoost_USE_STATIC_LIBS=${Boost_USE_STATIC_LIBS}
@@ -119,7 +119,8 @@ function(BoostCMaker)
 
     # Configurable variables from
     # android-sdk/cmake/3.6.3155560/android.toolchain.cmake
-    # (package version 3.6.3155560).
+    # (package version 3.6.3155560)
+    # and from android-sdk/ndk-bundle/build/cmake/android.toolchain.cmake
     # Modeled after the ndk-build system.
     # For any variables defined in:
     #         https://developer.android.com/ndk/guides/android_mk.html
