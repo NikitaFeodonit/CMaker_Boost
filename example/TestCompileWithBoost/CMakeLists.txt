@@ -57,10 +57,9 @@ set(Boost_USE_STATIC_LIBS ON)
 set(bcm_STATUS_DEBUG ON)
 set(bcm_STATUS_PRINT ON)
 set(bcm_DOWNLOAD_DIR "${PROJECT_BINARY_DIR}")
-set(bcm_SRC_DIR "${bcm_DOWNLOAD_DIR}")
+set(bcm_SRC_DIR "${PROJECT_BINARY_DIR}")
+set(bcm_BUILD_DIR "${PROJECT_BINARY_DIR}/build")
 
-bcm_print_var_value(bcm_DOWNLOAD_DIR)
-bcm_print_var_value(bcm_SRC_DIR)
 
 #-----------------------------------------------------------------------
 # Build and install the boost.

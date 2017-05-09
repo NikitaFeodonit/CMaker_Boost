@@ -214,6 +214,11 @@ function(BoostCMaker)
       -Dbcm_SRC_DIR=${bcm_SRC_DIR}
     )
   endif()
+  if(bcm_BUILD_DIR)
+    list(APPEND bcm_CMAKE_ARGS
+      -Dbcm_BUILD_DIR=${bcm_BUILD_DIR}
+    )
+  endif()
   if(bcm_BUILD_TOOLS_ONLY)
     list(APPEND bcm_CMAKE_ARGS
       -Dbcm_BUILD_TOOLS_ONLY=${bcm_BUILD_TOOLS_ONLY}

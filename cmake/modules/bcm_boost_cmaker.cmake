@@ -65,6 +65,7 @@ set(bcm_TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 #   bcm_DOWNLOAD_DIR  -- for downloaded files
 #   bcm_SRC_DIR       -- for unpacked sources
+#   bcm_BUILD_DIR     -- for build files
 
 #   bcm_BUILD_TOOLS_ONLY
 #   bcm_BUILD_BCP_TOOL
@@ -119,11 +120,16 @@ function(bcm_boost_cmaker)
   endif()
 
   if(NOT bcm_SRC_DIR)
-    set(bcm_SRC_DIR "${bcm_DOWNLOAD_DIR}")
+    set(bcm_SRC_DIR "${bcm_DOWNLOAD_DIR}/sources")
   endif()
-  
-  set(boost_src_dir "${bcm_SRC_DIR}/${boost_src_dir_name}")
+
+  if(NOT bcm_BUILD_DIR)
+    set(bcm_BUILD_DIR "${bcm_DOWNLOAD_DIR}/build")
+  endif()
+
   set(boost_tar_file "${bcm_DOWNLOAD_DIR}/${boost_tar_file_name}")
+  set(boost_src_dir "${bcm_SRC_DIR}/${boost_src_dir_name}")
+  set(boost_build_dir "${bcm_BUILD_DIR}/${boost_src_dir_name}")
 
 
   #-----------------------------------------------------------------------
@@ -193,6 +199,11 @@ function(bcm_boost_cmaker)
   
 
   #-----------------------------------------------------------------------
+  # bootstrap_args
+  #-----------------------------------------------------------------------
+
+
+  #-----------------------------------------------------------------------
   # common_b2_args
   #-----------------------------------------------------------------------
   
@@ -212,14 +223,16 @@ function(bcm_boost_cmaker)
     set(NJOBS 1)
   endif()
   list(APPEND common_b2_args "-j" "${NJOBS}")
+  
+  # Build in this location instead of building within the distribution tree.
+  list(APPEND common_b2_args
+    "--build-dir=${boost_build_dir}"
+  )
 
   
   #-----------------------------------------------------------------------
   # b2_args
   #-----------------------------------------------------------------------
-
-  # TODO: --build-dir=DIR 
-  # Build in this location instead of building within the distribution tree.
 
   list(APPEND b2_args "toolset=${toolset_full_name}")
 
@@ -580,10 +593,10 @@ function(bcm_boost_cmaker)
   #
   if(NOT EXISTS "${boost_src_dir}")
     message(STATUS "Extract ${boost_tar_file}")
-    file(MAKE_DIRECTORY ${boost_src_dir})
+    file(MAKE_DIRECTORY ${bcm_SRC_DIR})
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E tar xjf ${boost_tar_file}
-      WORKING_DIRECTORY ${bcm_DOWNLOAD_DIR}
+      WORKING_DIRECTORY ${bcm_SRC_DIR}
     )
   endif()
   
@@ -619,7 +632,7 @@ function(bcm_boost_cmaker)
   if(NOT b2_file)
 
     if(bcm_STATUS_DEBUG)
-      bcm_status_debug("Options for b2 (bjam) tool building:")
+      bcm_status_debug("bootstrap.sh options for b2 (bjam) tool building:")
       foreach(opt ${bootstrap_args})
         bcm_status_debug("  ${opt}")
       endforeach()
@@ -653,7 +666,7 @@ function(bcm_boost_cmaker)
       list(APPEND bcp_b2_args ${common_b2_args})
 
       if(bcm_STATUS_DEBUG)
-        bcm_status_debug("Options for bcp tool building:")
+        bcm_status_debug("b2 options for bcp tool building:")
         foreach(opt ${bcp_b2_args})
           bcm_status_debug("  ${opt}")
         endforeach()
@@ -694,7 +707,7 @@ function(bcm_boost_cmaker)
 
   if(bcm_STATUS_DEBUG)
     file(READ "${user_config_jamfile}" USER_JAM_CONTENT)
-    bcm_status_debug("Options for boost library building:")
+    bcm_status_debug("b2 options for boost library building:")
     foreach(opt ${b2_args})
       bcm_status_debug("  ${opt}")
     endforeach()
