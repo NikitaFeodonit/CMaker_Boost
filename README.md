@@ -3,7 +3,7 @@ Build the Boost with the CMake at a configure time.
 
 Some docs see in a source code. There is also an example with README with the build commands for the different systems.
 
-Building is tested on the Linux, Android. Other systems are in a progress.
+Building is tested on the Linux, Android. Other systems are not tested.
 
 #### Tested configurations:
 
