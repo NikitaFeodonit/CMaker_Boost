@@ -9,7 +9,7 @@ Building is tested on the Linux, Android. Other systems are not tested.
 
 Linux: gcc, clang, static, shared.
 
-Android: gcc, clang, static (shared is broken). BoostCMaker can be included to the gradle project in the Android Studio.
+Android: gcc, clang, static (shared is broken). CMaker_Boost can be included to the gradle project in the Android Studio.
 
 ### Based on the:
 
