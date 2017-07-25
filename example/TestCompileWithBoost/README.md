@@ -1,9 +1,9 @@
-# BoostCMaker example
+# CMaker_Boost example
 
 For building the example:
 ```
-git clone https://github.com/NikitaFeodonit/BoostCMaker
-cp -r BoostCMaker/example/TestCompileWithBoost/ ./
+git clone https://github.com/NikitaFeodonit/CMaker_Boost
+cp -r CMaker_Boost/example/TestCompileWithBoost/ ./
 mkdir TestCompileWithBoost/cmake
 mkdir TestCompileWithBoost/build
 cp -r BoostCMaker TestCompileWithBoost/cmake/
