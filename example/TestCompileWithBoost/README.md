@@ -6,7 +6,7 @@ git clone https://github.com/NikitaFeodonit/CMaker_Boost
 cp -r CMaker_Boost/example/TestCompileWithBoost/ ./
 mkdir TestCompileWithBoost/cmake
 mkdir TestCompileWithBoost/build
-cp -r BoostCMaker TestCompileWithBoost/cmake/
+cp -r CMaker_Boost TestCompileWithBoost/cmake/
 cd TestCompileWithBoost/build/
 
 cmake ../ \
