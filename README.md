@@ -4,7 +4,7 @@ LibCMaker_Boost uses [LibCMaker](https://github.com/LibCMaker/LibCMaker).
 
 This 'CMaker_Boost' repository is only for archival purposes and read-only.
 
-# CMaker_Boost
+## CMaker_Boost
 Build the Boost with the CMake at a configure time.
 
 Some docs see in a source code. There is also an example with README with the build commands for the different systems.
