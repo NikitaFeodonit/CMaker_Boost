@@ -1,3 +1,9 @@
+# Please see [LibCMaker_Boost](https://github.com/LibCMaker/LibCMaker_Boost)
+
+LibCMaker_Boost uses [LibCMaker](https://github.com/LibCMaker/LibCMaker).
+
+This 'CMaker_Boost' repository is only for archival purposes and read-only.
+
 # CMaker_Boost
 Build the Boost with the CMake at a configure time.
 
